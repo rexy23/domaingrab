@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { withAuth, securityHeaders } from '@/lib/auth-middleware';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(
@@ -52,22 +51,16 @@ const DEFAULT_PREFERENCES: UserPreferences = {
   },
 };
 
-export async function GET(request: NextRequest) {
+export const GET = withAuth(async (_req: NextRequest, user) => {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Get user preferences from database
-    const { data: user, error } = await supabase
+    // Get user preferences from database - user can only access their own data
+    const { data: userData, error } = await supabase
       .from('users')
       .select('id, subscription_tier, subscription_status')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
 
-    if (error || !user) {
+    if (error || !userData) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
@@ -79,14 +72,16 @@ export async function GET(request: NextRequest) {
     const preferences = {
       ...DEFAULT_PREFERENCES,
       // Enable enhanced analysis for premium users
-      enhancedAnalysis: user.subscription_tier !== 'free',
+      enhancedAnalysis: userData.subscription_tier !== 'free',
     };
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       preferences,
-      userTier: user.subscription_tier,
-      subscriptionStatus: user.subscription_status,
+      userTier: userData.subscription_tier,
+      subscriptionStatus: userData.subscription_status,
     });
+    
+    return securityHeaders(response);
   } catch (error) {
     console.error('Get preferences API error:', error);
     return NextResponse.json(
@@ -94,16 +89,10 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function PUT(request: NextRequest) {
+export const PUT = withAuth(async (request: NextRequest, user) => {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const preferences = await request.json();
 
     // Validate preferences structure
@@ -117,14 +106,14 @@ export async function PUT(request: NextRequest) {
     // In a full implementation, you'd validate each preference field
     // and store them in a preferences table
     
-    // For now, just validate the user exists
-    const { data: user, error } = await supabase
+    // For now, just validate the user exists - user can only update their own preferences
+    const { data: userData, error } = await supabase
       .from('users')
       .select('id')
-      .eq('id', session.user.id)
+      .eq('id', user.id)
       .single();
 
-    if (error || !user) {
+    if (error || !userData) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
@@ -132,12 +121,14 @@ export async function PUT(request: NextRequest) {
     }
 
     // TODO: Store preferences in database
-    // await supabase.from('user_preferences').upsert({ user_id: session.user.id, preferences });
+    // await supabase.from('user_preferences').upsert({ user_id: user.id, preferences });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: 'Preferences updated successfully',
       preferences,
     });
+    
+    return securityHeaders(response);
   } catch (error) {
     console.error('Update preferences API error:', error);
     return NextResponse.json(
@@ -145,4 +136,4 @@ export async function PUT(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

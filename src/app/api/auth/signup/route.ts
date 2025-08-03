@@ -42,8 +42,11 @@ export async function POST(request: NextRequest) {
         email,
         name: name || null,
         password_hash: passwordHash,
+        role: 'user', // Explicitly set role
+        subscription_tier: 'free',
+        subscription_status: 'active',
       })
-      .select('id, email, name, subscription_tier, subscription_status')
+      .select('id, email, name, subscription_tier, subscription_status, role')
       .single();
 
     if (error) {

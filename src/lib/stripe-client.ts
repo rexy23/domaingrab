@@ -1,8 +1,8 @@
-import Stripe from 'stripe';
+// This file contains client-safe Stripe configuration
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-07-30.basil',
-});
+export const getStripePublishableKey = () => {
+  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!;
+};
 
 export const PRICE_IDS = {
   free: null,
@@ -18,12 +18,14 @@ export const PLANS = {
     currency: 'EUR',
     interval: null,
     features: [
-      '10 searches per day',
+      '5 searches per day',
       'Basic domain scores',
       'Monthly email alerts',
     ],
-    searchLimit: 10,
+    searchLimit: 5,
     alertFrequency: 'monthly',
+    monthlyPriceId: null,
+    yearlyPriceId: null,
   },
   pro: {
     name: 'Pro',
@@ -40,6 +42,8 @@ export const PLANS = {
     searchLimit: -1,
     alertFrequency: 'daily',
     apiLimit: 1000,
+    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID || 'price_pro_monthly',
+    yearlyPriceId: process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID || 'price_pro_yearly',
   },
   business: {
     name: 'Business',
@@ -57,6 +61,8 @@ export const PLANS = {
     searchLimit: -1,
     alertFrequency: 'daily',
     apiLimit: 10000,
+    monthlyPriceId: process.env.NEXT_PUBLIC_STRIPE_BUSINESS_MONTHLY_PRICE_ID || 'price_business_monthly',
+    yearlyPriceId: process.env.NEXT_PUBLIC_STRIPE_BUSINESS_YEARLY_PRICE_ID || 'price_business_yearly',
   },
   enterprise: {
     name: 'Enterprise',
@@ -74,5 +80,7 @@ export const PLANS = {
     searchLimit: -1,
     alertFrequency: 'realtime',
     apiLimit: -1,
+    monthlyPriceId: null,
+    yearlyPriceId: null,
   },
 } as const;

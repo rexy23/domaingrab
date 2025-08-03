@@ -124,5 +124,21 @@ model SearchLog {
   createdAt   DateTime  @default(now())
   
   @@index([createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
   @@map("search_logs")
+}
+
+model SearchTracking {
+  id                String    @id @default(cuid())
+  ipAddress         String
+  deviceFingerprint String
+  userAgent         String
+  userId            String?
+  searchCount       Int       @default(1)
+  createdAt         DateTime  @default(now())
+  
+  @@index([ipAddress, createdAt(sort: Desc)])
+  @@index([deviceFingerprint, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
+  @@map("search_tracking")
 }

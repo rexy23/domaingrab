@@ -52,6 +52,7 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             subscriptionTier: user.subscription_tier,
             subscriptionStatus: user.subscription_status,
+            role: user.role || 'user',
           };
         } catch (error) {
           console.error('Auth error:', error);
@@ -65,6 +66,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.subscriptionTier = user.subscriptionTier;
         token.subscriptionStatus = user.subscriptionStatus;
+        token.role = user.role;
       }
       return token;
     },
@@ -73,12 +75,12 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub!;
         session.user.subscriptionTier = token.subscriptionTier as string;
         session.user.subscriptionStatus = token.subscriptionStatus as string;
+        session.user.role = (token.role as 'user' | 'admin' | 'super_admin') || 'user';
       }
       return session;
     },
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
   },
 };

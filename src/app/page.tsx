@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search, Zap, Shield, Globe } from 'lucide-react';
 import SearchResults from '@/components/SearchResults';
+import Link from 'next/link';
+import { fetchWithCSRF } from '@/hooks/useCSRF';
 
 interface DomainResult {
   domain: string;
@@ -20,6 +23,7 @@ interface DomainResult {
 }
 
 export default function Home() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<DomainResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +36,7 @@ export default function Home() {
     setHasSearched(true);
 
     try {
-      const response = await fetch('/api/search', {
+      const response = await fetchWithCSRF('/api/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +62,9 @@ export default function Home() {
 
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    handleSearch(searchQuery);
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+    }
   };
 
   // Show search results if user has searched
@@ -92,12 +98,12 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-6">
-            <button className="text-gray-900 hover:text-blue-600 transition-colors font-medium">
+            <Link href="/auth/signin" className="text-gray-900 hover:text-blue-600 transition-colors font-medium">
               Sign In
-            </button>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+            </Link>
+            <Link href="/auth/signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors px-6 py-2">
               Get Started
-            </button>
+            </Link>
           </div>
         </nav>
       </header>
@@ -218,12 +224,12 @@ export default function Home() {
                   in discovering domains that define excellence.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-lg px-10 py-4">
+                  <Link href="/auth/signup" className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-lg px-10 py-4">
                     Start Your Journey
-                  </button>
-                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors-outline text-lg px-10 py-4">
+                  </Link>
+                  <Link href="/pricing" className="bg-white hover:bg-gray-50 text-blue-600 border border-blue-600 font-medium rounded-lg transition-colors text-lg px-10 py-4">
                     View Pricing
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

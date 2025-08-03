@@ -1,118 +1,138 @@
-import { requireAuth } from '@/lib/auth-utils';
-import { createClient } from '@supabase/supabase-js';
+'use client';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import Link from 'next/link';
+import { Globe, Search, TrendingUp, Bell, LogOut } from 'lucide-react';
+import { signOut } from 'next-auth/react';
 
-export default async function DashboardPage() {
-  const session = await requireAuth();
+export default function Dashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-  // Get user's recent searches
-  const { data: recentSearches } = await supabase
-    .from('search_logs')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .order('created_at', { ascending: false })
-    .limit(10);
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session) {
+      router.push('/auth/signin');
+    }
+  }, [session, status, router]);
 
-  // Get user's saved domains
-  const { data: savedDomains } = await supabase
-    .from('user_domains')
-    .select(`
-      *,
-      domain:domain_intelligence(*)
-    `)
-    .eq('user_id', session.user.id)
-    .order('created_at', { ascending: false });
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen bg-gradient-luxury flex items-center justify-center">
+        <div className="text-center">
+          <Globe className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading your dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return null;
+  }
+
+  const handleSignOut = async () => {
+    await signOut({ redirect: true, callbackUrl: '/' });
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-luxury p-6">
-      <div className="max-w-7xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-3xl font-light text-gray-900 mb-2">
-            Welcome back, {session.user.name || session.user.email}
+    <div className="min-h-screen bg-gradient-luxury">
+      {/* Header */}
+      <header className="bg-white/90 backdrop-blur-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Link href="/dashboard" className="inline-flex items-center gap-3">
+              <div className="relative">
+                <Globe className="h-8 w-8 text-blue-500" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
+              </div>
+              <span className="text-2xl font-light text-gray-900">DomainGrab</span>
+            </Link>
+            
+            <nav className="flex items-center gap-6">
+              <Link href="/dashboard" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Dashboard
+              </Link>
+              <Link href="/search" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Search
+              </Link>
+              <Link href="/domains" className="text-gray-700 hover:text-blue-600 transition-colors">
+                My Domains
+              </Link>
+              <Link href="/alerts" className="text-gray-700 hover:text-blue-600 transition-colors">
+                Alerts
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="text-gray-700 hover:text-red-600 transition-colors"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        <div className="mb-8">
+          <h1 className="text-4xl text-luxury-title text-gray-900 mb-2">
+            Welcome back, {session.user.name || session.user.email}!
           </h1>
-          <div className="flex items-center gap-4">
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
-              {session.user.subscriptionTier} Plan
-            </span>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              session.user.subscriptionStatus === 'active' 
-                ? 'bg-green-100 text-green-800' 
-                : 'bg-red-100 text-red-800'
-            }`}>
-              {session.user.subscriptionStatus}
-            </span>
-          </div>
-        </header>
-
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Recent Searches */}
-          <div className="lg:col-span-2 card-luxury">
-            <h2 className="text-xl font-medium text-gray-900 mb-6">Recent Searches</h2>
-            {recentSearches && recentSearches.length > 0 ? (
-              <div className="space-y-4">
-                {recentSearches.map((search: any) => (
-                  <div key={search.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div>
-                      <p className="font-medium text-gray-900">{search.query}</p>
-                      <p className="text-sm text-gray-600">
-                        {search.results_count} results • {search.response_time}ms
-                      </p>
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {new Date(search.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No searches yet. Start by searching for domains!</p>
-            )}
-          </div>
-
-          {/* Saved Domains */}
-          <div className="card-luxury">
-            <h2 className="text-xl font-medium text-gray-900 mb-6">Saved Domains</h2>
-            {savedDomains && savedDomains.length > 0 ? (
-              <div className="space-y-3">
-                {savedDomains.map((userDomain: any) => (
-                  <div key={userDomain.id} className="p-3 bg-gray-50 rounded-lg">
-                    <p className="font-medium text-gray-900">{userDomain.domain?.domain}</p>
-                    <p className="text-sm text-gray-600 capitalize">{userDomain.action}</p>
-                    {userDomain.domain?.grab_score && (
-                      <p className="text-sm text-blue-600">Score: {userDomain.domain.grab_score}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-600">No saved domains yet.</p>
-            )}
-          </div>
+          <p className="text-gray-600">
+            Your subscription: <span className="font-semibold capitalize">{session.user.subscriptionTier}</span> plan
+          </p>
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8 card-luxury">
-          <h2 className="text-xl font-medium text-gray-900 mb-6">Quick Actions</h2>
-          <div className="grid md:grid-cols-3 gap-4">
-            <button className="p-6 text-left bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
-              <h3 className="font-medium text-blue-900 mb-2">New Search</h3>
-              <p className="text-sm text-blue-700">Find your perfect domain</p>
-            </button>
-            <button className="p-6 text-left bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
-              <h3 className="font-medium text-green-900 mb-2">Bulk Analysis</h3>
-              <p className="text-sm text-green-700">Analyze multiple domains</p>
-            </button>
-            <button className="p-6 text-left bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
-              <h3 className="font-medium text-purple-900 mb-2">Set Alerts</h3>
-              <p className="text-sm text-purple-700">Get notified of opportunities</p>
-            </button>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <Link href="/search" className="card-luxury hover:shadow-xl transition-shadow">
+            <div className="flex items-start gap-4">
+              <div className="bg-blue-100 p-3 rounded-lg">
+                <Search className="h-6 w-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Search Domains</h3>
+                <p className="text-gray-600 text-sm">Find your perfect domain with AI-powered search</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/domains" className="card-luxury hover:shadow-xl transition-shadow">
+            <div className="flex items-start gap-4">
+              <div className="bg-green-100 p-3 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Domain Analytics</h3>
+                <p className="text-gray-600 text-sm">Track performance and value of your domains</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/alerts" className="card-luxury hover:shadow-xl transition-shadow">
+            <div className="flex items-start gap-4">
+              <div className="bg-purple-100 p-3 rounded-lg">
+                <Bell className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-1">Set Alerts</h3>
+                <p className="text-gray-600 text-sm">Get notified when domains become available</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="card-luxury">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-4">Recent Activity</h2>
+          <div className="space-y-4">
+            <p className="text-gray-600">No recent activity yet. Start by searching for domains!</p>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }

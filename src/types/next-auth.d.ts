@@ -7,12 +7,14 @@ declare module 'next-auth' {
       id: string;
       subscriptionTier: string;
       subscriptionStatus: string;
+      role: 'user' | 'admin' | 'super_admin';
     } & DefaultSession['user'];
   }
 
   interface User extends DefaultUser {
     subscriptionTier: string;
     subscriptionStatus: string;
+    role: 'user' | 'admin' | 'super_admin';
   }
 }
 
@@ -20,5 +22,6 @@ declare module 'next-auth/jwt' {
   interface JWT {
     subscriptionTier: string;
     subscriptionStatus: string;
+    role: 'user' | 'admin' | 'super_admin';
   }
 }
