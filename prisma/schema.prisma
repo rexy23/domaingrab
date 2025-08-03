@@ -1,0 +1,128 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Subscription
+  subscriptionTier    String    @default("free") // free, pro, business, enterprise
+  subscriptionStatus  String    @default("active") // active, cancelled, past_due
+  stripeCustomerId    String?   @unique
+  subscriptionEnd     DateTime?
+  
+  // Usage tracking
+  searchesToday       Int       @default(0)
+  lastSearchReset     DateTime  @default(now())
+  
+  // Relations
+  domains       UserDomain[]
+  alerts        Alert[]
+  apiKeys       ApiKey[]
+  
+  @@map("users")
+}
+
+model DomainIntelligence {
+  id                String    @id @default(cuid())
+  domain            String    @unique
+  tld               String
+  grabScore         Int?
+  status            String    @default("available") // available, taken, expired, pending
+  
+  // Intelligence data
+  intelligenceData  Json?     // Flexible JSONB for various data points
+  confidence        Float?    // 0.0 to 1.0 confidence in the data
+  
+  // Timestamps
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  lastChecked       DateTime  @default(now())
+  
+  // Relations
+  userDomains       UserDomain[]
+  
+  @@index([grabScore(sort: Desc)])
+  @@index([updatedAt(sort: Desc)])
+  @@index([tld])
+  @@map("domain_intelligence")
+}
+
+model UserDomain {
+  id          String    @id @default(cuid())
+  userId      String
+  domainId    String
+  action      String    // watched, owned, ignored, interested
+  notes       String?
+  purchasePrice Float?
+  currentValue  Float?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  domain      DomainIntelligence @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, domainId])
+  @@map("user_domains")
+}
+
+model Alert {
+  id          String    @id @default(cuid())
+  userId      String
+  name        String
+  criteria    Json      // Search criteria as JSON
+  frequency   String    @default("daily") // daily, weekly
+  isActive    Boolean   @default(true)
+  lastSent    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("alerts")
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  userId      String
+  key         String    @unique
+  name        String
+  usageCount  Int       @default(0)
+  lastUsed    DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  
+  // Relations
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("api_keys")
+}
+
+model SearchLog {
+  id          String    @id @default(cuid())
+  userId      String?
+  query       String
+  resultsCount Int
+  responseTime Int       // milliseconds
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+  
+  @@index([createdAt(sort: Desc)])
+  @@map("search_logs")
+}
