@@ -2,14 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import { DomainChecker } from '@/lib/domain-checker';
 import { searchRateLimit } from '@/lib/rate-limit';
 import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
-    const { query } = await request.json();
+    const { query, enhanced = false, targetCountry, industry } = await request.json();
 
     if (!query || typeof query !== 'string') {
       return NextResponse.json({ error: 'Query is required' }, { status: 400 });
     }
+
+    // Get user session for enhanced features
+    const session = await getServerSession(authOptions);
 
     // Get client IP for rate limiting
     const clientIP = request.headers.get('x-forwarded-for') || 
@@ -34,17 +39,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user can use enhanced analysis
+    const canUseEnhanced = enhanced && (
+      !session || // Allow for demo purposes
+      session.user.subscriptionTier !== 'free' || 
+      session.user.subscriptionStatus === 'active'
+    );
+
     // Initialize domain checker
     const domainChecker = new DomainChecker();
 
+    // Prepare market context for enhanced analysis
+    const marketContext = canUseEnhanced ? {
+      query,
+      targetCountry,
+      industry
+    } : undefined;
+
     // Generate domain suggestions
     const startTime = Date.now();
-    const results = await domainChecker.generateDomainSuggestions(query, 50);
+    const results = await domainChecker.generateDomainSuggestions(
+      query, 
+      50, 
+      canUseEnhanced,
+      marketContext
+    );
     const responseTime = Date.now() - startTime;
 
     // Log search for analytics
     await prisma.searchLog.create({
       data: {
+        userId: session?.user?.id || null,
         query,
         resultsCount: results.length,
         responseTime,
@@ -55,12 +80,20 @@ export async function POST(request: NextRequest) {
 
     // Store domain intelligence in database for caching
     for (const result of results) {
+      const intelligenceData = {
+        basic: result.basicIntelligence,
+        ...(result.enhancedIntelligence && {
+          enhanced: result.enhancedIntelligence
+        })
+      };
+
       await prisma.domainIntelligence.upsert({
         where: { domain: result.domain },
         update: {
           grabScore: result.grabScore,
           status: result.available ? 'available' : 'taken',
-          intelligenceData: result.basicIntelligence,
+          intelligenceData,
+          confidence: result.enhancedIntelligence?.confidence || 0.7,
           lastChecked: new Date(),
         },
         create: {
@@ -68,8 +101,8 @@ export async function POST(request: NextRequest) {
           tld: result.tld,
           grabScore: result.grabScore,
           status: result.available ? 'available' : 'taken',
-          intelligenceData: result.basicIntelligence,
-          confidence: 0.7, // Basic confidence for simple scoring
+          intelligenceData,
+          confidence: result.enhancedIntelligence?.confidence || 0.7,
         },
       });
     }
@@ -81,6 +114,8 @@ export async function POST(request: NextRequest) {
         total: results.length,
         responseTime,
         rateLimitRemaining: rateLimitResult.remaining,
+        enhancedAnalysisUsed: canUseEnhanced,
+        aiAnalyzedDomains: results.filter(r => r.enhancedIntelligence).length,
       },
     });
 

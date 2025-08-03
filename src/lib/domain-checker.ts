@@ -1,4 +1,5 @@
 import { redis } from './redis';
+import { ClaudeAI, EnhancedDomainIntelligence, MarketContext } from './claude-ai';
 
 export interface DomainResult {
   domain: string;
@@ -13,6 +14,7 @@ export interface DomainResult {
     pronounceable: boolean;
     brandable: boolean;
   };
+  enhancedIntelligence?: EnhancedDomainIntelligence;
 }
 
 export const EU_TLDS = [
@@ -21,6 +23,7 @@ export const EU_TLDS = [
 
 export class DomainChecker {
   private readonly cache_ttl = 300; // 5 minutes
+  private readonly claudeAI = new ClaudeAI();
 
   async checkDomain(domain: string): Promise<DomainResult | null> {
     try {
@@ -160,7 +163,12 @@ export class DomainChecker {
     return Math.max(1, Math.min(100, Math.floor(score)));
   }
 
-  async generateDomainSuggestions(query: string, maxResults = 50): Promise<DomainResult[]> {
+  async generateDomainSuggestions(
+    query: string, 
+    maxResults = 50, 
+    useEnhancedAnalysis = false,
+    marketContext?: MarketContext
+  ): Promise<DomainResult[]> {
     const suggestions = this.generateDomainVariations(query);
     const results: DomainResult[] = [];
 
@@ -171,7 +179,37 @@ export class DomainChecker {
         batch.map(domain => this.checkDomain(domain))
       );
       
-      results.push(...batchResults.filter(Boolean) as DomainResult[]);
+      const validResults = batchResults.filter(Boolean) as DomainResult[];
+      results.push(...validResults);
+    }
+
+    // Apply enhanced analysis if requested
+    if (useEnhancedAnalysis && results.length > 0) {
+      const topDomains = results
+        .sort((a, b) => b.grabScore - a.grabScore)
+        .slice(0, Math.min(20, results.length)); // Analyze top 20 to manage costs
+
+      const enhancedAnalyses = await this.claudeAI.batchAnalyzeDomains(
+        topDomains.map(result => ({
+          domain: result.domain,
+          basicIntelligence: result.basicIntelligence
+        })),
+        marketContext || { query }
+      );
+
+      // Merge enhanced analysis back into results
+      const enhancedMap = new Map(
+        enhancedAnalyses.map(({ domain, analysis }) => [domain, analysis])
+      );
+
+      results.forEach(result => {
+        const enhanced = enhancedMap.get(result.domain);
+        if (enhanced) {
+          result.enhancedIntelligence = enhanced;
+          // Update grab score with AI-enhanced score
+          result.grabScore = enhanced.grabScore;
+        }
+      });
     }
 
     // Sort by grab score (highest first)

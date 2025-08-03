@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { ClaudeAI, MarketContext } from '@/lib/claude-ai';
 import { GDPRCompliance } from '@/lib/gdpr-compliance';
 import { apiRateLimit } from '@/lib/rate-limit';
+import { prisma } from '@/lib/prisma';
 
 const claudeAI = new ClaudeAI();
 const gdprCompliance = new GDPRCompliance({
@@ -17,6 +20,17 @@ export async function POST(request: NextRequest) {
 
     if (!domain || typeof domain !== 'string') {
       return NextResponse.json({ error: 'Domain is required' }, { status: 400 });
+    }
+
+    // Get user session
+    const session = await getServerSession(authOptions);
+    
+    // Check if user has access to enhanced analysis
+    if (!session || (session.user.subscriptionTier === 'free' && session.user.subscriptionStatus !== 'active')) {
+      return NextResponse.json(
+        { error: 'Enhanced analysis requires a premium subscription' },
+        { status: 403 }
+      );
     }
 
     // Get client IP for rate limiting
@@ -52,6 +66,31 @@ export async function POST(request: NextRequest) {
       sanitizedMarketContext
     );
 
+    // Store enhanced analysis in database
+    await prisma.domainIntelligence.upsert({
+      where: { domain },
+      update: {
+        intelligenceData: {
+          basic: basicIntelligence,
+          enhanced: JSON.parse(JSON.stringify(analysis))
+        },
+        confidence: analysis.confidence,
+        grabScore: analysis.grabScore,
+        lastChecked: new Date(),
+      },
+      create: {
+        domain,
+        tld: domain.split('.').pop() || '',
+        intelligenceData: {
+          basic: basicIntelligence,
+          enhanced: JSON.parse(JSON.stringify(analysis))
+        },
+        confidence: analysis.confidence,
+        grabScore: analysis.grabScore,
+        status: 'analyzed',
+      },
+    });
+
     // Create data processing record for compliance
     const processingRecord = gdprCompliance.createDataProcessingRecord(
       'Domain intelligence analysis',
@@ -67,6 +106,7 @@ export async function POST(request: NextRequest) {
         confidence: analysis.confidence,
         analysisVersion: analysis.analysisVersion,
         rateLimitRemaining: rateLimitResult.remaining,
+        userId: session.user.id,
       },
     });
 
