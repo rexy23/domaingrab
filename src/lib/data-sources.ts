@@ -145,7 +145,7 @@ export class DataPipeline {
     }
   }
 
-  private async getDNSHistory(domain: string) {
+  private async getDNSHistory(_domain: string) {
     if (!this.checkRateLimit('dns', 60)) { // 60 requests per minute
       throw new Error('Rate limit exceeded for DNS');
     }
@@ -179,7 +179,7 @@ export class DataPipeline {
     }
   }
 
-  private async getBacklinkProfile(domain: string) {
+  private async getBacklinkProfile(_domain: string) {
     if (!this.checkRateLimit('backlinks', 20)) { // 20 requests per minute
       throw new Error('Rate limit exceeded for backlink data');
     }
@@ -231,7 +231,7 @@ export class DataPipeline {
         previousBusiness: Math.random() > 0.7 ? {
           name: `${domain.split('.')[0]} Ltd`,
           industry: randomIndustry,
-          status: Math.random() > 0.5 ? 'inactive' : 'active' as const
+          status: (Math.random() > 0.5 ? 'inactive' : 'active') as 'active' | 'inactive' | 'unknown'
         } : undefined,
         marketPresence: {
           socialMedia: Math.random() > 0.6 ? ['Twitter', 'LinkedIn'] : [],
@@ -307,7 +307,7 @@ export class DataPipeline {
           available: true,
           responseTime: Date.now() - start
         };
-      } catch (error) {
+      } catch (_error) {
         health[source] = {
           available: false,
           responseTime: Date.now() - start

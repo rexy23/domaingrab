@@ -34,7 +34,7 @@ export class GDPRCompliance {
     this.config = config;
   }
 
-  sanitizeData(data: any, classification?: DataClassification): any {
+  sanitizeData(data: unknown, classification?: DataClassification): unknown {
     if (typeof data === 'string') {
       return this.sanitizeString(data, classification);
     }
@@ -44,7 +44,7 @@ export class GDPRCompliance {
     }
 
     if (data && typeof data === 'object') {
-      const sanitized: any = {};
+      const sanitized: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(data)) {
         const fieldClassification = this.classifyField(key, value);
         sanitized[key] = this.sanitizeData(value, fieldClassification);
@@ -123,7 +123,7 @@ export class GDPRCompliance {
     return sanitized;
   }
 
-  private classifyField(fieldName: string, value: any): DataClassification {
+  private classifyField(fieldName: string, value: unknown): DataClassification {
     const name = fieldName.toLowerCase();
     
     // Check for sensitive field names
@@ -144,7 +144,7 @@ export class GDPRCompliance {
     };
   }
 
-  private containsPII(value: any): boolean {
+  private containsPII(value: unknown): boolean {
     if (typeof value !== 'string') return false;
 
     return Object.values(this.piiPatterns).some(pattern => pattern.test(value));
@@ -154,14 +154,14 @@ export class GDPRCompliance {
     return createHash('sha256').update(data).digest('hex');
   }
 
-  validateDataRetention(data: any, timestamp: Date): boolean {
+  validateDataRetention(data: unknown, timestamp: Date): boolean {
     const retentionLimit = new Date();
     retentionLimit.setDate(retentionLimit.getDate() - this.config.retentionPeriod);
     
     return timestamp > retentionLimit;
   }
 
-  generateComplianceReport(data: any): {
+  generateComplianceReport(data: unknown): {
     totalFields: number;
     personalDataFields: number;
     sensitiveDataFields: number;
@@ -197,7 +197,7 @@ export class GDPRCompliance {
     };
   }
 
-  private analyzeDataCompliance(data: any, path = ''): {
+  private analyzeDataCompliance(data: unknown, path = ''): {
     totalFields: number;
     personalDataFields: number;
     sensitiveDataFields: number;

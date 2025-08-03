@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
-  Search, Star, Globe, Clock, ExternalLink, TrendingUp, 
-  Shield, Zap, Brain, AlertTriangle, CheckCircle, 
+  Star, Globe, Clock, ExternalLink, TrendingUp, 
+  Shield, Zap, Brain, CheckCircle, 
   BarChart3, Users, Building
 } from 'lucide-react';
 
@@ -75,22 +75,20 @@ interface EnhancedDomainCardProps {
   tld: string;
   available: boolean;
   basicIntelligence: BasicIntelligence;
-  onAnalyze?: (domain: string) => void;
 }
 
 export default function EnhancedDomainCard({ 
   domain, 
   tld, 
   available, 
-  basicIntelligence,
-  onAnalyze 
+  basicIntelligence
 }: EnhancedDomainCardProps) {
   const [enhancedIntelligence, setEnhancedIntelligence] = useState<EnhancedIntelligence | null>(null);
   const [domainHistory, setDomainHistory] = useState<DomainHistory | null>(null);
   const [isLoadingEnhanced, setIsLoadingEnhanced] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'analysis' | 'history'>('overview');
-  const [showFullAnalysis, setShowFullAnalysis] = useState(false);
+  // const [showFullAnalysis, setShowFullAnalysis] = useState(false);
 
   const basicScore = calculateBasicScore();
 
@@ -105,7 +103,7 @@ export default function EnhancedDomainCard({
     return Math.max(1, Math.min(100, score));
   }
 
-  const loadEnhancedAnalysis = async () => {
+  const loadEnhancedAnalysis = useCallback(async () => {
     if (enhancedIntelligence || isLoadingEnhanced) return;
     
     setIsLoadingEnhanced(true);
@@ -129,9 +127,9 @@ export default function EnhancedDomainCard({
     } finally {
       setIsLoadingEnhanced(false);
     }
-  };
+  }, [domain, basicIntelligence, enhancedIntelligence, isLoadingEnhanced]);
 
-  const loadDomainHistory = async () => {
+  const loadDomainHistory = useCallback(async () => {
     if (domainHistory || isLoadingHistory) return;
     
     setIsLoadingHistory(true);
@@ -151,7 +149,7 @@ export default function EnhancedDomainCard({
     } finally {
       setIsLoadingHistory(false);
     }
-  };
+  }, [domain, domainHistory, isLoadingHistory]);
 
   useEffect(() => {
     if (activeTab === 'analysis' && !enhancedIntelligence) {
@@ -160,121 +158,147 @@ export default function EnhancedDomainCard({
     if (activeTab === 'history' && !domainHistory) {
       loadDomainHistory();
     }
-  }, [activeTab]);
+  }, [activeTab, enhancedIntelligence, domainHistory, loadEnhancedAnalysis, loadDomainHistory]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
+    if (score >= 80) return 'score-excellent';
+    if (score >= 60) return 'score-good';
+    return 'score-fair';
   };
 
   const getRiskColor = (risk: 'low' | 'medium' | 'high') => {
     switch (risk) {
-      case 'low': return 'text-green-600 bg-green-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'high': return 'text-red-600 bg-red-100';
+      case 'low': return 'score-excellent';
+      case 'medium': return 'score-good';
+      case 'high': return 'score-fair';
     }
   };
 
   const currentScore = enhancedIntelligence?.grabScore || basicScore;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-100">
+    <div className="card-luxury">
+      {/* Luxury Header */}
+      <div className="pb-6 border-b border-blue-100">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-3">
-              <h3 className="text-xl font-semibold text-gray-900">{domain}</h3>
+            <div className="flex items-center gap-4 mb-6">
+              <h3 className="text-2xl font-light text-charcoal text-luxury-title">{domain}</h3>
               {available ? (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                  <CheckCircle className="w-3 h-3 mr-1" />
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+                  <CheckCircle className="w-4 h-4 mr-2" />
                   Available
                 </span>
               ) : (
-                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                  <Clock className="w-3 h-3 mr-1" />
-                  Taken
+                <span className="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-amber-100 text-amber-800">
+                  <Clock className="w-4 h-4 mr-2" />
+                  Reserved
                 </span>
               )}
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreColor(currentScore)}`}>
+              <span className={`px-4 py-2 rounded-full text-sm font-medium ${getScoreColor(currentScore)}`}>
                 {isLoadingEnhanced && activeTab === 'analysis' ? (
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                     Analyzing...
                   </div>
                 ) : (
-                  `GrabScore: ${currentScore}/100`
+                  `Score: ${currentScore}/100`
                 )}
               </span>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-              <div className="text-sm">
-                <span className="text-gray-500">Length:</span>
-                <span className="ml-1 font-medium">{basicIntelligence.length} chars</span>
+            {/* Luxury Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+              <div className="text-center">
+                <div className="text-2xl font-light text-blue-600 mb-1">{basicIntelligence.length}</div>
+                <div className="text-sm text-charcoal/60 uppercase tracking-wide">Characters</div>
               </div>
-              <div className="text-sm">
-                <span className="text-gray-500">Type:</span>
-                <span className="ml-1 font-medium">
+              <div className="text-center">
+                <div className="text-sm font-medium text-charcoal mb-1">
                   {basicIntelligence.brandable ? 'Brandable' : 
                    basicIntelligence.pronounceable ? 'Pronounceable' : 'Generic'}
-                </span>
+                </div>
+                <div className="text-sm text-charcoal/60 uppercase tracking-wide">Type</div>
               </div>
-              <div className="text-sm">
-                <span className="text-gray-500">TLD:</span>
-                <span className="ml-1 font-medium">.{tld}</span>
+              <div className="text-center">
+                <div className="text-lg font-medium text-blue-600 mb-1">.{tld.toUpperCase()}</div>
+                <div className="text-sm text-charcoal/60 uppercase tracking-wide">Extension</div>
               </div>
-              <div className="text-sm">
-                <span className="text-gray-500">Quality:</span>
-                <span className="ml-1 font-medium">
-                  {!basicIntelligence.hasNumbers && !basicIntelligence.hasHyphens ? 'Clean' : 'Mixed'}
-                </span>
+              <div className="text-center">
+                <div className="text-sm font-medium text-charcoal mb-1">
+                  {!basicIntelligence.hasNumbers && !basicIntelligence.hasHyphens ? 'Premium' : 'Standard'}
+                </div>
+                <div className="text-sm text-charcoal/60 uppercase tracking-wide">Quality</div>
               </div>
             </div>
+
+            {/* Luxury Feature Tags */}
+            {(basicIntelligence.brandable || basicIntelligence.pronounceable || basicIntelligence.keywordDensity > 0.5 || basicIntelligence.length <= 6) && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {basicIntelligence.brandable && (
+                  <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs rounded-full border border-blue-100">
+                    ✨ Brandable
+                  </span>
+                )}
+                {basicIntelligence.pronounceable && (
+                  <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs rounded-full border border-emerald-100">
+                    🗣️ Pronounceable
+                  </span>
+                )}
+                {basicIntelligence.keywordDensity > 0.5 && (
+                  <span className="px-3 py-1 bg-purple-50 text-purple-700 text-xs rounded-full border border-purple-100">
+                    🎯 Keyword Rich
+                  </span>
+                )}
+                {basicIntelligence.length <= 6 && (
+                  <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs rounded-full border border-amber-100">
+                    💎 Premium Short
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col gap-2 ml-6">
+          {/* Luxury Action Buttons */}
+          <div className="flex flex-col gap-3 ml-8">
             {available ? (
-              <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2">
+              <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2 px-6 py-3">
                 <ExternalLink className="h-4 w-4" />
-                Register
+                Acquire
               </button>
             ) : (
-              <button className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center gap-2">
+              <button className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors flex items-center gap-2 px-6 py-3">
                 <Clock className="h-4 w-4" />
-                Watch
+                Monitor
               </button>
             )}
-            <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+            <button className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors flex items-center gap-2 px-6 py-3">
               <Star className="h-4 w-4" />
-              Save
+              Curate
             </button>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-gray-100">
+      {/* Luxury Tabs */}
+      <div className="border-b border-blue-100 mt-8">
         <div className="flex">
           {[
             { id: 'overview', label: 'Overview', icon: Globe },
             { id: 'analysis', label: 'AI Analysis', icon: Brain },
-            { id: 'history', label: 'History', icon: BarChart3 }
+            { id: 'history', label: 'Intelligence', icon: BarChart3 }
           ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as any)}
-              className={`flex items-center gap-2 px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              onClick={() => setActiveTab(id as 'overview' | 'analysis' | 'history')}
+              className={`flex items-center gap-3 px-8 py-4 text-sm font-medium border-b-3 transition-all duration-300 ${
                 activeTab === id
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-500 text-blue-600 bg-blue-50/50'
+                  : 'border-transparent text-charcoal/60 hover:text-blue-500 hover:border-blue-200'
               }`}
             >
-              <Icon className="w-4 h-4" />
-              {label}
+              <Icon className="w-5 h-5" />
+              <span className="text-luxury-subtitle">{label}</span>
             </button>
           ))}
         </div>
@@ -396,7 +420,7 @@ export default function EnhancedDomainCard({
                       <div>
                         <span className="text-gray-500">Target Markets:</span>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {enhancedIntelligence.marketFit.targetMarkets.map(market => (
+                          {enhancedIntelligence.marketFit.targetMarkets.map((market: string) => (
                             <span key={market} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
                               {market}
                             </span>

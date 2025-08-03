@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { Search, Star, Globe, Clock, ExternalLink } from 'lucide-react';
+import { Search, Globe } from 'lucide-react';
+import EnhancedDomainCard from './EnhancedDomainCard';
 
 interface DomainResult {
   domain: string;
@@ -35,46 +36,35 @@ export default function SearchResults({ results, isLoading, query, onSearch }: S
     }
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 bg-green-100';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-100';
-    return 'text-red-600 bg-red-100';
-  };
-
-  const getAvailabilityBadge = (available: boolean) => {
-    return available ? (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-        Available
-      </span>
-    ) : (
-      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-        Taken
-      </span>
-    );
-  };
+  // Utility functions moved to EnhancedDomainCard component
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Search Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <form onSubmit={handleSearch} className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Globe className="h-6 w-6 text-indigo-600" />
-              <span className="text-xl font-bold text-gray-900">DomainGrab</span>
-              <span className="text-sm bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">.eu</span>
+    <div className="min-h-screen bg-gradient-luxury">
+      {/* Luxury Search Header */}
+      <div className="bg-white/90 backdrop-blur-sm shadow-luxury border-b border-blue-100">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <form onSubmit={handleSearch} className="flex items-center gap-6">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Globe className="h-8 w-8 text-blue-500" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
+              </div>
+              <div>
+                <span className="text-2xl font-light text-charcoal text-luxury-title">DomainGrab</span>
+                <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2 font-medium">.eu</span>
+              </div>
             </div>
-            <div className="flex-1 relative max-w-2xl">
+            <div className="flex-1 relative max-w-3xl">
               <input
                 type="text"
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search for domains..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Refine your search..."
+                className="input-luxury"
               />
               <button
                 type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-indigo-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors py-2 px-4"
               >
                 <Search className="h-4 w-4" />
               </button>
@@ -84,160 +74,103 @@ export default function SearchResults({ results, isLoading, query, onSearch }: S
       </div>
 
       {/* Results Section */}
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-7xl mx-auto px-6 py-12">
         {isLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin h-8 w-8 border-b-2 border-indigo-600 rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-600">Searching for perfect domains...</p>
+          <div className="text-center py-20">
+            <div className="relative">
+              <div className="animate-spin h-12 w-12 border-3 border-blue-200 border-t-blue-500 rounded-full mx-auto mb-6"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-6 h-6 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full animate-pulse"></div>
+              </div>
+            </div>
+            <p className="text-charcoal/70 text-luxury-subtitle">Curating exceptional domains for you...</p>
           </div>
         ) : results.length > 0 ? (
           <>
-            {/* Results Header */}
-            <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Search Results for &quot;{query}&quot;
-              </h2>
-              <p className="text-gray-600">
-                Found {results.length} domains. Sorted by GrabScore.
-              </p>
+            {/* Luxury Results Header */}
+            <div className="mb-12">
+              <div className="text-center">
+                <h2 className="text-4xl text-luxury-title text-charcoal mb-4">
+                  Your Domain Collection
+                </h2>
+                <p className="text-xl text-charcoal/70 text-luxury-subtitle mb-2">
+                  Curated results for &quot;{query}&quot;
+                </p>
+                <div className="flex justify-center items-center gap-2 text-blue-600">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm font-medium">
+                    {results.length} exceptional domains discovered
+                  </span>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                </div>
+              </div>
             </div>
 
-            {/* Results Grid */}
-            <div className="grid gap-4">
+            {/* Luxury Results Grid */}
+            <div className="space-y-8">
               {results.map((result) => (
-                <div
+                <EnhancedDomainCard
                   key={result.domain}
-                  className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      {/* Domain Name & Availability */}
-                      <div className="flex items-center gap-3 mb-3">
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          {result.domain}
-                        </h3>
-                        {getAvailabilityBadge(result.available)}
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getScoreColor(result.grabScore)}`}>
-                          GrabScore: {result.grabScore}/100
-                        </span>
-                      </div>
-
-                      {/* Domain Intelligence */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-                        <div className="text-sm">
-                          <span className="text-gray-500">Length:</span>
-                          <span className="ml-1 font-medium">{result.basicIntelligence.length} chars</span>
-                        </div>
-                        <div className="text-sm">
-                          <span className="text-gray-500">Type:</span>
-                          <span className="ml-1 font-medium">
-                            {result.basicIntelligence.brandable ? 'Brandable' : 
-                             result.basicIntelligence.pronounceable ? 'Pronounceable' : 'Generic'}
-                          </span>
-                        </div>
-                        <div className="text-sm">
-                          <span className="text-gray-500">TLD:</span>
-                          <span className="ml-1 font-medium">.{result.tld}</span>
-                        </div>
-                        <div className="text-sm">
-                          <span className="text-gray-500">Quality:</span>
-                          <span className="ml-1 font-medium">
-                            {!result.basicIntelligence.hasNumbers && !result.basicIntelligence.hasHyphens ? 'Clean' : 'Mixed'}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Feature Tags */}
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {result.basicIntelligence.brandable && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                            Brandable
-                          </span>
-                        )}
-                        {result.basicIntelligence.pronounceable && (
-                          <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                            Pronounceable
-                          </span>
-                        )}
-                        {result.basicIntelligence.keywordDensity > 0.5 && (
-                          <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-                            Keyword Rich
-                          </span>
-                        )}
-                        {result.basicIntelligence.length <= 6 && (
-                          <span className="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
-                            Short & Sweet
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-col gap-2 ml-6">
-                      {result.available ? (
-                        <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2">
-                          <ExternalLink className="h-4 w-4" />
-                          Register
-                        </button>
-                      ) : (
-                        <button className="bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          Watch
-                        </button>
-                      )}
-                      <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 flex items-center gap-2">
-                        <Star className="h-4 w-4" />
-                        Save
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Score Breakdown */}
-                  <div className="mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>Score Breakdown:</span>
-                      <div className="flex items-center gap-4">
-                        <span>Length: {result.basicIntelligence.length <= 8 ? '+' : '-'}</span>
-                        <span>Clean: {!result.basicIntelligence.hasNumbers && !result.basicIntelligence.hasHyphens ? '+' : '-'}</span>
-                        <span>Brandable: {result.basicIntelligence.brandable ? '+' : '-'}</span>
-                        <span>TLD: .{result.tld}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                  domain={result.domain}
+                  tld={result.tld}
+                  available={result.available}
+                  basicIntelligence={result.basicIntelligence}
+                />
               ))}
             </div>
 
-            {/* Load More Button */}
+            {/* Luxury Load More Button */}
             {results.length >= 50 && (
-              <div className="text-center mt-8">
-                <button className="bg-indigo-100 text-indigo-700 px-6 py-3 rounded-lg hover:bg-indigo-200">
-                  Load More Results
+              <div className="text-center mt-16">
+                <button className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors px-8 py-4">
+                  Discover More Domains
                 </button>
               </div>
             )}
           </>
         ) : query ? (
-          <div className="text-center py-12">
-            <Globe className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-2">No domains found</h3>
-            <p className="text-gray-600 mb-6">
-              Try adjusting your search terms or exploring different keywords.
-            </p>
-            <button
-              onClick={() => onSearch('tech startup')}
-              className="text-indigo-600 hover:text-indigo-700"
-            >
-              Try &quot;tech startup&quot; instead
-            </button>
+          <div className="text-center py-20">
+            <div className="card-luxury max-w-2xl mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full mx-auto mb-8 flex items-center justify-center">
+                <Globe className="h-10 w-10 text-blue-500" />
+              </div>
+              <h3 className="text-2xl text-luxury-title text-charcoal mb-4">
+                No Domains Found
+              </h3>
+              <p className="text-charcoal/70 text-luxury-subtitle mb-8 leading-relaxed">
+                We couldn&apos;t find domains matching your criteria. Try adjusting your search 
+                or exploring different keywords to discover your perfect domain.
+              </p>
+              <div className="space-y-4">
+                <button
+                  onClick={() => onSearch('luxury boutique')}
+                  className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors mr-4"
+                >
+                  Try &quot;luxury boutique&quot;
+                </button>
+                <button
+                  onClick={() => onSearch('tech startup')}
+                  className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors"
+                >
+                  Try &quot;tech startup&quot;
+                </button>
+              </div>
+            </div>
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Search className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-medium text-gray-900 mb-2">Start your search</h3>
-            <p className="text-gray-600">
-              Enter keywords to find the perfect EU domain for your project.
-            </p>
+          <div className="text-center py-20">
+            <div className="card-luxury max-w-2xl mx-auto">
+              <div className="w-20 h-20 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full mx-auto mb-8 flex items-center justify-center">
+                <Search className="h-10 w-10 text-white" />
+              </div>
+              <h3 className="text-2xl text-luxury-title text-charcoal mb-4">
+                Begin Your Search
+              </h3>
+              <p className="text-charcoal/70 text-luxury-subtitle leading-relaxed">
+                Enter your vision above to discover domains that will define 
+                your digital presence in the European market.
+              </p>
+            </div>
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ClaudeAI } from '@/lib/claude-ai';
+import { ClaudeAI, MarketContext } from '@/lib/claude-ai';
 import { GDPRCompliance } from '@/lib/gdpr-compliance';
 import { apiRateLimit } from '@/lib/rate-limit';
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Sanitize input data for GDPR compliance
-    const sanitizedMarketContext = gdprCompliance.sanitizeData(marketContext);
+    const sanitizedMarketContext = gdprCompliance.sanitizeData(marketContext) as MarketContext | undefined;
 
     // Perform Claude AI analysis
     const analysis = await claudeAI.analyzeDomain(

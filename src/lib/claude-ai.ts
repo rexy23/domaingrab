@@ -4,6 +4,21 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
+export interface BasicIntelligence {
+  length: number;
+  hasNumbers: boolean;
+  hasHyphens: boolean;
+  keywordDensity: number;
+  pronounceable: boolean;
+  brandable: boolean;
+}
+
+export interface MarketContext {
+  query: string;
+  targetCountry?: string;
+  industry?: string;
+}
+
 export interface EnhancedDomainIntelligence {
   grabScore: number;
   brandability: {
@@ -44,12 +59,8 @@ export class ClaudeAI {
 
   async analyzeDomain(
     domain: string,
-    basicIntelligence: any,
-    marketContext?: {
-      query: string;
-      targetCountry?: string;
-      industry?: string;
-    }
+    basicIntelligence: BasicIntelligence,
+    marketContext?: MarketContext
   ): Promise<EnhancedDomainIntelligence> {
     const cacheKey = `${domain}_${JSON.stringify(marketContext)}`;
     
@@ -69,7 +80,7 @@ export class ClaudeAI {
       });
 
       const analysisText = response.content[0].type === 'text' ? response.content[0].text : '';
-      const analysis = this.parseAnalysisResponse(analysisText, domain);
+      const analysis = this.parseAnalysisResponse(analysisText, domain, basicIntelligence);
       
       // Cache for 1 hour
       this.cacheMap.set(cacheKey, analysis);
@@ -84,8 +95,8 @@ export class ClaudeAI {
 
   private buildAnalysisPrompt(
     domain: string,
-    basicIntelligence: any,
-    marketContext?: any
+    basicIntelligence: BasicIntelligence,
+    marketContext?: MarketContext
   ): string {
     const [domainName, tld] = domain.split('.');
     
@@ -150,7 +161,7 @@ Focus on:
 5. Legal and trademark considerations for EU markets`;
   }
 
-  private parseAnalysisResponse(response: string, domain: string): EnhancedDomainIntelligence {
+  private parseAnalysisResponse(response: string, domain: string, basicIntelligence: BasicIntelligence): EnhancedDomainIntelligence {
     try {
       // Clean the response - remove any markdown formatting
       const cleanedResponse = response
@@ -167,11 +178,11 @@ Focus on:
       };
     } catch (error) {
       console.error('Failed to parse Claude AI response:', error);
-      return this.getFallbackAnalysis(domain, {});
+      return this.getFallbackAnalysis(domain, basicIntelligence);
     }
   }
 
-  private getFallbackAnalysis(domain: string, basicIntelligence: any): EnhancedDomainIntelligence {
+  private getFallbackAnalysis(domain: string, basicIntelligence: BasicIntelligence): EnhancedDomainIntelligence {
     const [domainName] = domain.split('.');
     const length = domainName.length;
     
@@ -212,8 +223,8 @@ Focus on:
   }
 
   async batchAnalyzeDomains(
-    domains: Array<{domain: string, basicIntelligence: any}>,
-    marketContext?: any
+    domains: Array<{domain: string, basicIntelligence: BasicIntelligence}>,
+    marketContext?: MarketContext
   ): Promise<Array<{domain: string, analysis: EnhancedDomainIntelligence}>> {
     // Process in batches of 3 to avoid rate limits
     const batchSize = 3;

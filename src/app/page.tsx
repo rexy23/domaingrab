@@ -77,131 +77,222 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-luxury">
       {/* Header */}
-      <header className="px-6 py-4">
+      <header className="px-6 py-6">
         <nav className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-2">
-            <Globe className="h-8 w-8 text-indigo-600" />
-            <span className="text-2xl font-bold text-gray-900">DomainGrab</span>
-            <span className="text-sm bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full">.eu</span>
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Globe className="h-10 w-10 text-blue-500" />
+              <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full"></div>
+            </div>
+            <div>
+              <span className="text-3xl font-light text-gray-900 text-luxury-title">DomainGrab</span>
+              <span className="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded-full ml-2 font-medium">.eu</span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <button className="text-gray-600 hover:text-gray-900">Login</button>
-            <button className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-              Sign Up
+          <div className="flex items-center gap-6">
+            <button className="text-gray-900 hover:text-blue-600 transition-colors font-medium">
+              Sign In
+            </button>
+            <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
+              Get Started
             </button>
           </div>
         </nav>
       </header>
 
       {/* Hero Section */}
-      <main className="px-6 py-20">
+      <main className="px-6 py-24">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-              Find Your Perfect 
-              <span className="text-indigo-600 block">EU Domain</span>
-              <span className="text-2xl md:text-3xl font-normal text-gray-600">in Seconds</span>
+          <div className="text-center mb-20">
+            <h1 className="text-6xl md:text-7xl text-luxury-title text-gray-900 mb-8">
+              Discover Your Perfect
+              <span className="text-blue-500 block bg-gradient-to-r from-blue-500 to-blue-600 bg-clip-text text-transparent">
+                European Domain
+              </span>
+              <span className="text-3xl md:text-4xl font-light text-gray-900/70 block mt-4">
+                with AI-Powered Intelligence
+              </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto">
-              AI-powered domain discovery with GDPR-compliant intelligence. 
-              The NameSnag of Europe is here.
+            <p className="text-xl text-gray-900/80 mb-16 max-w-4xl mx-auto text-luxury-subtitle">
+              Experience the future of domain discovery. Our GDPR-compliant platform combines 
+              artificial intelligence with European market expertise to find you the perfect digital identity.
             </p>
 
-            {/* Magic Search Box */}
-            <div className="bg-white rounded-2xl shadow-xl p-8 max-w-4xl mx-auto">
-              <div className="mb-6">
-                <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-                  🔮 Find Your Perfect EU Domain in Seconds
+            {/* Luxury Search Box */}
+            <div className="card-luxury max-w-5xl mx-auto mb-12">
+              <div className="mb-8">
+                <h2 className="text-2xl text-luxury-subtitle text-gray-900 mb-3">
+                  ✨ Your Domain Journey Begins Here
                 </h2>
+                <p className="text-gray-900/60 text-luxury-subtitle">
+                  Describe your vision, and let our AI curate the perfect domains for you
+                </p>
               </div>
               
-              <form onSubmit={onFormSubmit} className="mb-6">
+              <form onSubmit={onFormSubmit} className="mb-8">
                 <div className="relative">
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="I need a domain for..."
-                    className="w-full px-6 py-4 text-lg border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none"
+                    placeholder="I need a domain for my luxury boutique in Paris..."
+                    className="input-luxury text-lg"
                   />
                   <button
                     type="submit"
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors py-3 px-6"
                   >
-                    <Search className="h-6 w-6" />
+                    <Search className="h-5 w-5 mr-2" />
+                    Discover
                   </button>
                 </div>
               </form>
 
-              <div className="text-sm text-gray-500">
-                <p>Try: &quot;tech startup in Berlin&quot; or &quot;Dutch e-commerce&quot; or &quot;short brandable .eu&quot;</p>
+              <div className="flex flex-wrap justify-center gap-3 text-sm">
+                <span className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full">
+                  &quot;luxury fashion in Milan&quot;
+                </span>
+                <span className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full">
+                  &quot;German tech startup&quot;
+                </span>
+                <span className="px-4 py-2 bg-blue-50 text-blue-700 rounded-full">
+                  &quot;short brandable .eu&quot;
+                </span>
               </div>
             </div>
           </div>
 
           {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mb-20">
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              <div className="bg-indigo-100 rounded-lg p-3 w-fit mb-4">
-                <Zap className="h-8 w-8 text-indigo-600" />
+          <div className="grid md:grid-cols-3 gap-10 mb-24">
+            <div className="card-luxury text-center">
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <Zap className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">AI-Powered Discovery</h3>
-              <p className="text-gray-600">
-                Natural language search finds hidden gems across all EU/UK TLDs. 
-                Claude AI understands your intent and delivers perfect matches.
+              <h3 className="text-2xl text-luxury-subtitle text-gray-900 mb-4">
+                AI-Powered Discovery
+              </h3>
+              <p className="text-gray-900/70 text-luxury-subtitle leading-relaxed">
+                Our Claude AI understands context, culture, and market dynamics 
+                to surface domains that perfectly match your European ambitions.
               </p>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              <div className="bg-green-100 rounded-lg p-3 w-fit mb-4">
-                <Shield className="h-8 w-8 text-green-600" />
+            <div className="card-luxury text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <Shield className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">GDPR-Compliant Intelligence</h3>
-              <p className="text-gray-600">
-                Revolutionary WHOIS alternative with rich business insights. 
-                Full compliance with European privacy regulations.
+              <h3 className="text-2xl text-luxury-subtitle text-gray-900 mb-4">
+                Privacy-First Intelligence
+              </h3>
+              <p className="text-gray-900/70 text-luxury-subtitle leading-relaxed">
+                Revolutionary WHOIS alternative with full GDPR compliance. 
+                Rich insights without compromising European privacy standards.
               </p>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-lg">
-              <div className="bg-purple-100 rounded-lg p-3 w-fit mb-4">
-                <Globe className="h-8 w-8 text-purple-600" />
+            <div className="card-luxury text-center">
+              <div className="w-16 h-16 bg-gradient-to-br from-sapphire to-blue-600 rounded-2xl mx-auto mb-6 flex items-center justify-center">
+                <Globe className="h-8 w-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold mb-3">EU Market Optimized</h3>
-              <p className="text-gray-600">
-                Specialized for European markets with cultural fit analysis 
-                and cross-border opportunity detection.
+              <h3 className="text-2xl text-luxury-subtitle text-gray-900 mb-4">
+                European Market Mastery
+              </h3>
+              <p className="text-gray-900/70 text-luxury-subtitle leading-relaxed">
+                Specialized for EU/UK markets with cultural analysis, 
+                regulatory insights, and cross-border opportunity detection.
               </p>
             </div>
           </div>
 
-          {/* CTA Section */}
-          <div className="text-center bg-white rounded-2xl shadow-xl p-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Ready to Find Your Domain?
-            </h2>
-            <p className="text-xl text-gray-600 mb-8">
-              Join thousands of European entrepreneurs and investors
-            </p>
-            <button className="bg-indigo-600 text-white px-8 py-4 rounded-xl text-lg font-semibold hover:bg-indigo-700 shadow-lg">
-              Start Searching For Free
-            </button>
+          {/* Luxury CTA Section */}
+          <div className="text-center">
+            <div className="card-luxury max-w-4xl mx-auto bg-gradient-to-br from-white to-blue-50">
+              <div className="text-center">
+                <h2 className="text-4xl text-luxury-title text-gray-900 mb-6">
+                  Begin Your Digital Legacy
+                </h2>
+                <p className="text-xl text-gray-900/70 mb-10 text-luxury-subtitle max-w-2xl mx-auto">
+                  Join Europe&apos;s most discerning entrepreneurs and investors 
+                  in discovering domains that define excellence.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors text-lg px-10 py-4">
+                    Start Your Journey
+                  </button>
+                  <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors-outline text-lg px-10 py-4">
+                    View Pricing
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-6">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Globe className="h-6 w-6" />
-            <span className="text-xl font-bold">DomainGrab.eu</span>
+      {/* Luxury Footer */}
+      <footer className="bg-gradient-to-r from-gray-900 to-gray-800 text-blue-50 py-16 px-6 mt-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="relative">
+                <Globe className="h-8 w-8 text-blue-400" />
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full"></div>
+              </div>
+              <span className="text-2xl font-light text-luxury-title">DomainGrab.eu</span>
+            </div>
+            <p className="text-blue-100/80 text-luxury-subtitle max-w-2xl mx-auto">
+              The AI-powered domain intelligence platform crafted for Europe&apos;s digital elite. 
+              Where sophistication meets innovation.
+            </p>
           </div>
-          <p className="text-gray-400">
-            The AI-powered domain intelligence platform for EU/UK markets
-          </p>
+          
+          <div className="grid md:grid-cols-4 gap-8 text-center md:text-left">
+            <div>
+              <h4 className="text-blue-300 font-medium mb-4">Platform</h4>
+              <div className="space-y-2 text-blue-100/70">
+                <p>Domain Search</p>
+                <p>AI Analysis</p>
+                <p>Portfolio Tracker</p>
+                <p>Smart Alerts</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-blue-300 font-medium mb-4">Markets</h4>
+              <div className="space-y-2 text-blue-100/70">
+                <p>United Kingdom</p>
+                <p>Germany</p>
+                <p>France</p>
+                <p>Netherlands</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-blue-300 font-medium mb-4">Company</h4>
+              <div className="space-y-2 text-blue-100/70">
+                <p>About Us</p>
+                <a href="/privacy-policy" className="block hover:text-blue-100 transition-colors">Privacy Policy</a>
+                <a href="/cookie-preferences" className="block hover:text-blue-100 transition-colors">Cookie Preferences</a>
+                <p>Terms of Service</p>
+                <p>Contact</p>
+              </div>
+            </div>
+            <div>
+              <h4 className="text-blue-300 font-medium mb-4">Connect</h4>
+              <div className="space-y-2 text-blue-100/70">
+                <p>LinkedIn</p>
+                <p>Twitter</p>
+                <p>Newsletter</p>
+                <p>Support</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-blue-800 mt-12 pt-8 text-center">
+            <p className="text-blue-100/50 text-sm">
+              © 2024 DomainGrab.eu. Crafted with precision in Europe.
+            </p>
+          </div>
         </div>
       </footer>
     </div>
