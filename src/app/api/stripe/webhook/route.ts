@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
         console.log('Subscription updated:', {
           customerId: subscription.customer,
           status: subscription.status,
-          currentPeriodEnd: subscription.current_period_end,
+          currentPeriodEnds: subscription.items.data.map(item => item.current_period_end),
         });
         
         break;

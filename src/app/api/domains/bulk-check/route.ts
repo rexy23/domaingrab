@@ -71,7 +71,7 @@ export const POST = withAuth(async (req: NextRequest, user) => {
     const results = await domainChecker.checkMultipleDomains(
       domains,
       canUseEnhanced,
-      marketContext ? { ...marketContext, query: domains[0] } : undefined
+      marketContext ? { ...marketContext, query: domains.length === 1 ? domains[0] : 'Bulk domain check' } : undefined
     );
     
     const processingTime = Date.now() - startTime;
