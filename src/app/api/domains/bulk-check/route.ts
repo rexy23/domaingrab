@@ -36,7 +36,7 @@ export const POST = withAuth(async (req: NextRequest, user) => {
     
     if (!validation.success) {
       return NextResponse.json(
-        { error: 'Invalid request', details: validation.error.errors },
+        { error: 'Invalid request', details: validation.error.issues },
         { status: 400 }
       );
     }
@@ -71,7 +71,7 @@ export const POST = withAuth(async (req: NextRequest, user) => {
     const results = await domainChecker.checkMultipleDomains(
       domains,
       canUseEnhanced,
-      marketContext
+      marketContext ? { ...marketContext, query: domains[0] } : undefined
     );
     
     const processingTime = Date.now() - startTime;

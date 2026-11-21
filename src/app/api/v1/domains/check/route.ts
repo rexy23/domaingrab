@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { 
           error: 'Invalid request',
-          details: validation.error.errors 
+          details: validation.error.issues
         },
         { status: 400 }
       );
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     const result = await domainChecker.checkDomain(
       domain,
       canUseEnhanced,
-      marketContext
+      marketContext ? { ...marketContext, query: domain } : undefined
     );
     
     if (!result) {
