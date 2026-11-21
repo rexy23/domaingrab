@@ -120,7 +120,7 @@ export class WhoisService {
         update: {
           status: result.available ? 'available' : 'taken',
           intelligenceData: {
-            whois: result
+            whois: { ...result }
           },
           lastChecked: new Date()
         },
@@ -129,7 +129,7 @@ export class WhoisService {
           tld: tld || 'com',
           status: result.available ? 'available' : 'taken',
           intelligenceData: {
-            whois: result
+            whois: { ...result }
           },
           lastChecked: new Date()
         }

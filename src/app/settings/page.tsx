@@ -4,9 +4,8 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Globe, User, Mail, Key, CreditCard, Bell, Shield, Save, Check, AlertCircle, Loader } from 'lucide-react';
+import { Globe, User, Mail, Key, CreditCard, Bell, Shield, Save, Check, Loader } from 'lucide-react';
 import { useCSRF } from '@/hooks/useCSRF';
-import { useSubscription } from '@/hooks/useSubscription';
 import { PLANS } from '@/lib/stripe-client';
 
 interface UserSettings {
@@ -28,7 +27,10 @@ export default function SettingsPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const { csrfToken } = useCSRF();
-  const { subscription, isLoading: isLoadingSubscription } = useSubscription();
+  const subscription = session?.user ? {
+    plan: session.user.subscriptionTier,
+    status: session.user.subscriptionStatus,
+  } : undefined;
   
   const [settings, setSettings] = useState<UserSettings>({
     name: '',
@@ -302,12 +304,6 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
-                  {subscription?.nextBillingDate && (
-                    <div className="text-sm text-gray-600">
-                      <AlertCircle className="inline h-4 w-4 mr-1" />
-                      Next billing date: {new Date(subscription.nextBillingDate).toLocaleDateString()}
-                    </div>
-                  )}
                 </div>
               )}
 

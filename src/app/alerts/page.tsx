@@ -34,11 +34,19 @@ export default function AlertsPage() {
   const [editingAlert, setEditingAlert] = useState<string | null>(null);
   
   // New alert form state
-  const [newAlert, setNewAlert] = useState({
+  const [newAlert, setNewAlert] = useState<{
+    domain: string;
+    type: DomainAlert['type'];
+    frequency: DomainAlert['frequency'];
+    notificationMethod: DomainAlert['notificationMethod'];
+    priceThreshold: string;
+    scoreThreshold: string;
+    daysBeforeExpiry: string;
+  }>({
     domain: '',
-    type: 'availability' as const,
-    frequency: 'instant' as const,
-    notificationMethod: 'email' as const,
+    type: 'availability',
+    frequency: 'instant',
+    notificationMethod: 'email',
     priceThreshold: '',
     scoreThreshold: '',
     daysBeforeExpiry: '30',
@@ -257,7 +265,7 @@ export default function AlertsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Alert Type</label>
                 <select
                   value={newAlert.type}
-                  onChange={(e) => setNewAlert({ ...newAlert, type: e.target.value as any })}
+                  onChange={(e) => setNewAlert({ ...newAlert, type: e.target.value as DomainAlert['type'] })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="availability">Domain Becomes Available</option>
@@ -310,7 +318,7 @@ export default function AlertsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Frequency</label>
                 <select
                   value={newAlert.frequency}
-                  onChange={(e) => setNewAlert({ ...newAlert, frequency: e.target.value as any })}
+                    onChange={(e) => setNewAlert({ ...newAlert, frequency: e.target.value as DomainAlert['frequency'] })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="instant">Instant</option>
@@ -323,7 +331,7 @@ export default function AlertsPage() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Notification Method</label>
                 <select
                   value={newAlert.notificationMethod}
-                  onChange={(e) => setNewAlert({ ...newAlert, notificationMethod: e.target.value as any })}
+                  onChange={(e) => setNewAlert({ ...newAlert, notificationMethod: e.target.value as DomainAlert['notificationMethod'] })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="email">Email Only</option>
