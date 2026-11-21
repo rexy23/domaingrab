@@ -60,7 +60,7 @@ export async function GET() {
   }
 
   // Check for specific price IDs
-  let priceValidation = [];
+  const priceValidation = [];
   if (process.env.STRIPE_SECRET_KEY) {
     const priceIds = [
       { name: 'Pro Monthly', id: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID },
